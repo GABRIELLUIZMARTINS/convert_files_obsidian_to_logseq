@@ -1,8 +1,11 @@
-from obsidian2logseq import rename_and_copy_images
+from obsidian2logseq import *
 
 if __name__ == '__main__':
 
-    base_directory = 'C:/Users/gabriel.martins/Downloads/Projetos'
-    attachments_directory = 'C:/Users/gabriel.martins/OneDrive - Docol Metais Sanitários Ltda/Área de Trabalho/LogSeq/assets/images'
+    pf = Constants()
+    # Files path Obsidian
+    obsidian_files = pf.get_path()
 
-    img = rename_and_copy_images(base_directory,attachments_directory)
+    #Convert files
+    obj_convert = obsidian_to_logseq(obsidian_files)
+    obj_convert.convert_files()
