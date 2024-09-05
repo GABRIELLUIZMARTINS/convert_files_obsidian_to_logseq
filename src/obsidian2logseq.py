@@ -1,6 +1,5 @@
 import os
 import json
-import json
 
 
 
@@ -10,7 +9,7 @@ class Constants:
 
     """
     def __init__(self,):
-        self.file_path = 'src/constantes.json'
+        self.file_path = 'src/config.json'
         self.dados = self._load_data()
 
     def _load_data(self):
