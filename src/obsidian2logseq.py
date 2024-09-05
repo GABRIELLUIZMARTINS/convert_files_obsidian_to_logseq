@@ -1,38 +1,95 @@
 import os
-import shutil
+import json
 
-class rename_and_copy_images:
-    def __init__(self,base_directory,attachments_directory):
+
+
+class Constants:
+    """
+    Class to extract constants from JSON file.
+
+    """
+    def __init__(self,):
+        self.file_path = 'src/config.json'
+        self.dados = self._load_data()
+
+    def _load_data(self):
+        try:
+            with open(self.file_path, 'r') as arquivo:
+                return json.load(arquivo)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"Error loading JSON file: {e}")
+            return {}
+    def get_constants(self):
+        return self.dados.get('constantes')
+    def get_path(self):
+        return self.dados.get('path')[0]
+
+
+
+class obsidian_to_logseq:
+    """ Format Obsidian files to Logseq
+
+    Args:
+        obsidian_files (str): Path to obsidian files.
+    """
+    def __init__(self,obsidian_files):
         
-        self.base_directory = base_directory
-        self.attachments_directory = attachments_directory
+        self.obsidian_files = obsidian_files
+        conts = Constants()
+        self.CONTANTS = conts.get_constants()
+        
+    # Extract the file name from the following pattern "![[file_name.extension|size]]" or "![[file_name.extension]]"
+    def _separete_file_name_extension(self,old_text):
+        half = '.'
+        start_cut = '[['
+        end_cut = ']]'
+        or_end_cut = '|'
 
-        self.process_markdown_files(self.base_directory)
-        self.update_attachments_directory(base_directory,attachments_directory)
-
-
-    def rename(self,old_text):
-    
-        if not old_text[3] == '[' :
-            return  old_text
-
-        #Extract extension name
-        extension = old_text.split(".")[1].split("]")[0]
-        extension = extension.split("|")[0] if "|" in extension else extension
+        text = old_text.split(start_cut)[1]
+        text = text.split(end_cut)[0]
 
         #Extract file name
-        file_name = old_text.split(".")[0]
-        print("file_name"+file_name)
-        file_name = file_name.split("[[")[1] if "[[" in file_name else file_name.split("[")[1]
+        file_name = text.split(half)[0]
+
+        #Extract extension name
+        extension = text.split(half)[1]
+        extension = extension.split(or_end_cut)[0] if or_end_cut in extension else extension
+
+        return file_name,extension
+    
+    # Finds the file path 
+    def _find_file_path(self,file_name,extension):
+        for root, _, files in os.walk(self.obsidian_files):
+            for file in files:
+                if file.endswith(extension) and (file == f"{file_name}.{extension}"):
+                    return root
+
+    # Rename files to logseq format
+    def _rename(self,old_text):  
+
+        # Case it is a file
+        if not "![[" in old_text :
+            return  old_text
+    
+        #Extract file name and extension
+        file_name,extension = self._separete_file_name_extension(old_text)
 
         if(extension == "png" or extension == "jpg"):
-            new_text = "!["+file_name+"](../assets/images/"+file_name+'.'+extension+"){:height 500, :width 500}"
-            print(new_text)
+            file_path =  self._find_file_path(file_name,extension)
+            new_text = f'![{file_name}]({file_path}/{file_name}.{extension}){{:height 500, :width 500}}'
+            print(f"New text: {new_text}")
             return new_text
+        for ext in self.CONTANTS:
+            if extension == ext:
+                file_path =  self._find_file_path(file_name,extension)
+                new_text = f'![{file_name}]({file_path}/{file_name}.{extension})'
+                print(f"New text: {new_text}")
+                return new_text
         return old_text
 
-    def process_markdown_files(self):
-        for root, _, files in os.walk(self.base_directory):
+    # Convert obsidian 
+    def convert_files(self):
+        for root, _, files in os.walk(self.obsidian_files):
             for file in files:
                 if file.endswith(".md"):
                     file_path = os.path.join(root, file)
@@ -40,20 +97,9 @@ class rename_and_copy_images:
                         lines = f.readlines()
                         f.seek(0)
                         for line in lines:
-                            print(line+"8-8-8")
-                            new_line = self.rename(line) if ("png" in line or "jpg" in line) else line
+                            new_line = ""
+                            for conts in self.CONTANTS:
+                                new_line = self._rename(line) if (conts in line) else new_line
+                            new_line = line if new_line == "" else new_line
                             f.write(new_line)
                         f.truncate()
-
-    def update_attachments_directory(self):
-        for root, _, files in os.walk(self.base_directory):
-            for file in files:
-                if file.endswith(".png") or file.endswith(".jpg"):
-                    file_path = os.path.join(root, file)  # Caminho completo do arquivo de origem
-                    destination = os.path.join(self.attachments_directory, file)  # Caminho completo do arquivo de destino
-                    
-                    print("Copiando o arquivo:", file_path, "para", destination)
-                    shutil.copyfile(file_path, destination)  # Copia o arquivo de origem para o destino
-
-
-
