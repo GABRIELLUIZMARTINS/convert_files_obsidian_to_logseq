@@ -1,12 +1,11 @@
 import os
 import json
-
-
+import shutil
 
 class Constants:
     """
     Class to extract constants from JSON file.
-
+    
     """
     def __init__(self,):
         self.file_path = 'src/config.json'
@@ -22,7 +21,7 @@ class Constants:
     def get_constants(self):
         return self.dados.get('constantes')
     def get_path(self):
-        return self.dados.get('path')[0]
+        return self.dados.get('path_project')[0]
 
 
 
@@ -64,6 +63,38 @@ class obsidian_to_logseq:
                 if file.endswith(extension) and (file == f"{file_name}.{extension}"):
                     return root
 
+    def _copy_files(self,folder_files):
+        folder_files = os.path.normpath(folder_files)
+        folder_files = folder_files.replace("/", "\\")
+        
+        # Path to 'assets' folder
+        pasta_assets = os.path.join(os.path.dirname(folder_files), 'assets')
+        
+        # Check if the 'assets' folder exists, if not, create it
+        if not os.path.exists(pasta_assets):
+            os.makedirs(pasta_assets)
+            print(f"Pasta 'assets' criada em: {pasta_assets}")
+        else:
+            print(f"Pasta 'assets' já existe em: {pasta_assets}")
+
+        # Copy all files from folder_files to the 'assets' folder
+        for item in os.listdir(folder_files):
+            origem = os.path.join(folder_files, item)
+            destino = os.path.join(pasta_assets, item)
+
+            # If it is a file, copy it to 'assets'
+            if os.path.isfile(origem):
+                try:
+                    shutil.copy2(origem, destino)
+                    print(f"File {origem} sucessfully copied to {destino}.")
+                    #successfully copied to
+                except PermissionError:
+                    print(f"Errro: The file {origem} is already being used by another process.")
+            else:
+                print(f"{item} it is not a file, igonoring")
+                
+
+
     # Rename files to logseq format
     def _rename(self,old_text):  
 
@@ -73,16 +104,20 @@ class obsidian_to_logseq:
     
         #Extract file name and extension
         file_name,extension = self._separete_file_name_extension(old_text)
+        file_path =  self._find_file_path(file_name,extension)
 
+        self._copy_files(file_path)
+                
         if(extension == "png" or extension == "jpg"):
-            file_path =  self._find_file_path(file_name,extension)
-            new_text = f'![{file_name}]({file_path}/{file_name}.{extension}){{:height 500, :width 500}}'
+            #file_folder = os.path.basename(file_path)
+            new_text = f'![{file_name}](../assets/{file_name}.{extension}){{:height 500, :width 500}}'
             print(f"New text: {new_text}")
             return new_text
         for ext in self.CONTANTS:
             if extension == ext:
+                #file_folder = os.path.basename(file_path)
                 file_path =  self._find_file_path(file_name,extension)
-                new_text = f'![{file_name}]({file_path}/{file_name}.{extension})'
+                new_text = f'![{file_name}](../assets/{file_name}.{extension})'
                 print(f"New text: {new_text}")
                 return new_text
         return old_text
