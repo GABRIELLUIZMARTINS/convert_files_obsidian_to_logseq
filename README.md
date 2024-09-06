@@ -4,7 +4,7 @@ Convert files obsidian to logseq
 
 ## Convertion files
 
-Convert files following structure of files '![[file_name.extension|size]]' or '![[file_name.extension]]' from *Obsidian* to '\!\[file_name\]\('file_path/file_name.extension'\)' *Logseq*.
+Convert files following structure of files '![[file_name.extension|size]]' or '![[file_name.extension]]' from *Obsidian* to '\!\[file_name\]\('../assets/file_name.extension'\)' *Logseq*.
 
 ## How to use
 
