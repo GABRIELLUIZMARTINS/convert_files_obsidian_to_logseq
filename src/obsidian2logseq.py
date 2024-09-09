@@ -20,9 +20,6 @@ class Constants:
             return {}
     def get_constants(self):
         return self.dados.get('constantes')
-    def get_path(self):
-        return self.dados.get('path_project')[0]
-
 
 
 class obsidian_to_logseq:
