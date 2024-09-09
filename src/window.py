@@ -14,6 +14,11 @@ class Window(Tk):
         # Init object convert
         self.obj_convert = obsidian_to_logseq()
 
+        self.created_window()
+        self.add_bottuns_and_labels()
+        self.add_and_configure_image()
+
+    def created_window(self):
         # Window configuration
         self.title("Conversor de arquivos - Obsidian para Logseq")
         self.geometry("900x390")
@@ -27,6 +32,7 @@ class Window(Tk):
         self.columnconfigure(0, weight=0)  # The column of buttons does not expand 
         self.columnconfigure(1, weight=1)  # The file path column expands
 
+    def add_bottuns_and_labels(self): 
         # Title (Centered)
         self.label_title = Label(self, text= "Instruções",font = ("Arial Bold", 20),fg='#88c7cc', bg='black', borderwidth=2, relief="solid", padx=10, pady=10)
         self.label_title.grid(row=0, column=0, columnspan=2, sticky="nsew")
@@ -88,7 +94,10 @@ class Window(Tk):
             self.rowconfigure(i, weight=1)
 
 
-        #---------------------------------------------------------------------------
+    def add_and_configure_image(self): 
+        uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
+        root = uppath(__file__,2)
+        self.iconbitmap(os.path.join(root, 'assets/obs2log.ico'))
 
         # Set the image path using a relative path
         image_path = os.path.join(os.path.dirname(__file__), '../assets/obs2log.png')
@@ -111,7 +120,6 @@ class Window(Tk):
         )
         image_label.grid(row=4, column=0, columnspan=2, sticky="n")
 
-        #---------------------------------------------------------------------------
 
     def _selecionar_pasta(self):
         # Open the directory selection dialog
@@ -128,7 +136,7 @@ class Window(Tk):
             empty = self.obj_convert.convert_files(self.pasta_selecionada)
             print(f"Empty file? {empty}")    
             if empty :
-                messagebox.showinfo("_converter", f"Não há arquivos para serem convertidos ou já foram convertidos.")
+                messagebox.showinfo("Aviso!", f"Não há arquivos para serem convertidos ou já foram convertidos.")
             else:
-                messagebox.showinfo("_converter", f"Arquivos convertidos.")
+                messagebox.showinfo("Aviso!", f"Arquivos convertidos.")
             print(f"Pasta selecionada: {self.pasta_selecionada}")
