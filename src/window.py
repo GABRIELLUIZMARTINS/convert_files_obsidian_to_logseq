@@ -2,33 +2,42 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import ttk
-from PIL import Image, ImageTk  # Importando PIL
+from PIL import Image, ImageTk  
 
 from obsidian2logseq import *
 import os
 
-class Root(Tk):
+class Window(Tk):
     def __init__(self):
         super().__init__()
+
         # Init object convert
         self.obj_convert = obsidian_to_logseq()
 
+        self.created_window()
+        self.add_bottuns_and_labels()
+        self.add_and_configure_image()
+
+    def created_window(self):
+        # Window configuration
         self.title("Conversor de arquivos - Obsidian para Logseq")
         self.geometry("900x390")
         self.pasta_selecionada = ''
-        # Definir a cor de fundo da janela como preto
+        
+        # Define the background color of the window as black
         self.configure(bg="black")
 
-        #---------------------------------------------------------------------------
-        # Definindo as configurações das colunas
-        self.columnconfigure(0, weight=0)  # Coluna do Botão 1 e Botão 2 não expande
-        self.columnconfigure(1, weight=1)  # Coluna do Caminho/do/arquivo expande
 
-        # Título (centralizado)
+        # Setting up column configurations
+        self.columnconfigure(0, weight=0)  # The column of buttons does not expand 
+        self.columnconfigure(1, weight=1)  # The file path column expands
+
+    def add_bottuns_and_labels(self): 
+        # Title (Centered)
         self.label_title = Label(self, text= "Instruções",font = ("Arial Bold", 20),fg='#88c7cc', bg='black', borderwidth=2, relief="solid", padx=10, pady=10)
-        self.label_title.grid(row=0, column=0, columnspan=2, sticky="nsew")  # Centralizado
+        self.label_title.grid(row=0, column=0, columnspan=2, sticky="nsew")
 
-        # Instruções de uso (alinhado à esquerda)
+        # Usage instructions 
         self.label_instructions = Label(self, relief="solid",
                                         text="Para converter um projeto Obsidian para Logseq, selecione o local que está seu projeto Obsidian e após clique em Converter.", 
                                         borderwidth=2,  
@@ -38,9 +47,9 @@ class Root(Tk):
                                         fg='#88c7cc', 
                                         bg='black'
                                         )
-        self.label_instructions.grid(row=1, column=0, columnspan=2, sticky="nsew")  # Alinhado à esquerda
+        self.label_instructions.grid(row=1, column=0, columnspan=2, sticky="nsew")  
 
-        # Botão 1 (tamanho fixo)
+        # Bottun 1 (Fixed size)
         botao_selecionar = Button(self, text="Selecionar Pasta", 
                                   command = self._selecionar_pasta,
                                   relief="solid", 
@@ -50,10 +59,10 @@ class Root(Tk):
                                   font = ("Arial Bold", 10),
                                   fg='#012d32', 
                                   bg='#88c7cc'
-                                  )  # Tamanho fixo
+                                  )  
         botao_selecionar.grid(row=2, column=0, padx=5, pady=5)
 
-        # (Alinhado à esquerda)
+        #Path of the selected folder
         self.label = Label(self, textvariable= self.pasta_selecionada, 
                            borderwidth=2, 
                            padx=10, pady=10, 
@@ -63,7 +72,7 @@ class Root(Tk):
                            bg='black')
         self.label.grid(row=2, column=1, sticky="nsew")
 
-        # Botão 2 (tamanho fixo, igual ao Botão 1)
+        # Bottun 2 (Fixed size)
         botao_converter = Button(self, text="Converter", 
                                  command=self._converter,
                                  borderwidth=2, 
@@ -74,94 +83,60 @@ class Root(Tk):
                                  bg='#88c7cc')  # Tamanho fixo
         botao_converter.grid(row=3, column=0, padx=5, pady=5)
 
-        # Preenchendo a coluna da linha de Botão 2 para alinhar à esquerda
+        # Filling the column of bottun 2 row to align left
         botao_converter_placeholder = Label(self, text="", 
                                             borderwidth=2,
                                             bg='black')
-        botao_converter_placeholder.grid(row=3, column=1, sticky="nsew")  # Placeholder para alinhar
+        botao_converter_placeholder.grid(row=3, column=1, sticky="nsew") 
 
-        # Definindo o mesmo tamanho para as linhas
+        # Defining the same size for the rows
         for i in range(4):
             self.rowconfigure(i, weight=1)
 
-        # Definir o caminho da imagem usando caminho relativo
+
+    def add_and_configure_image(self): 
+        uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
+        root = uppath(__file__,2)
+        self.iconbitmap(os.path.join(root, 'assets/obs2log.ico'))
+
+        # Set the image path using a relative path
         image_path = os.path.join(os.path.dirname(__file__), '../assets/obs2log.png')
 
-        # Carregar a imagem com PIL, redimensionar e converter para PhotoImage
+        # Load the image with PIL, resize it and convert it to PhotoImage 
         original_image = Image.open(image_path)
         
-        # Redimensionar a imagem (defina a largura e altura desejadas)
-        resized_image = original_image.resize((387, 232), Image.LANCZOS)  # Aqui, 100x100 é o novo tamanho #(1550, 928)
+        # Resize the image (set the desired width and height) 
+        resized_image = original_image.resize((387, 232), Image.LANCZOS) 
 
-        # Converter a imagem redimensionada para um formato compatível com tkinter
+        # Convert the resized image to a tkinter compatible format
         self.photo = ImageTk.PhotoImage(resized_image)
 
-        # Criar o Label com a imagem
+        # Create the label with the image
         image_label = ttk.Label(
             self,
-            image=self.photo,  # Referência à imagem
+            image=self.photo,  # Image reference
             compound='top',
             background="black"
         )
-        # Adiciona a imagem na posição row=4, column=0
-        #image_label.grid(row=4, column=0, columnspan=2, sticky="nsew")
         image_label.grid(row=4, column=0, columnspan=2, sticky="n")
 
-        #---------------------------------------------------------------------------
 
     def _selecionar_pasta(self):
-        # Abre o diálogo de seleção de diretório
+        # Open the directory selection dialog
         self.pasta_selecionada = filedialog.askdirectory()
         self.label['text'] = self.pasta_selecionada
 
-        # Exibe a pasta selecionada em um popup e no console
+        # Shows the selected folder in a popup window and the console
         if self.pasta_selecionada:
             print(f"Pasta selecionada: {self.pasta_selecionada}")
 
     def _converter(self):
-         # Exibe a pasta selecionada em um popup e no console
         if self.pasta_selecionada:
             #Convert files
             empty = self.obj_convert.convert_files(self.pasta_selecionada)
-            print(f"Arquivo vazio? {empty}")    
+            print(f"Empty file? {empty}")    
             if empty :
-                messagebox.showinfo("_converter", f"Não há arquivos para serem convertidos ou já foram convertidos.")
+                messagebox.showinfo("Aviso!", f"Não há arquivos para serem convertidos ou já foram convertidos.")
             else:
-                messagebox.showinfo("_converter", f"Arquivos convertidos.")
+                messagebox.showinfo("Aviso!", f"Arquivos convertidos.")
             print(f"Pasta selecionada: {self.pasta_selecionada}")
-if __name__ == "__main__":
-    root = Root()
-    root.mainloop()
-
-
-"""
-class Root(Tk):
-    def __init__(self, tasks = None):
-        super().__init__()
-
-        if not tasks:
-            self.tasks = []
-        else:
-            self.tasks = tasks
-
-        self.title("Convert Files")
-        self.geometry("300x400")
-
-        label = Label(self, text = "Add your path:", bg = "lightgrey", fg = "white", padx=5, pady=5)
-        self.tasks.append(label)
-
-        for task in self.tasks:
-            task.pack(side=TOP, fill=X)
-
-        self.task_create = Text(self, height=3, bg="white",fg="white")
-
-        self.task_create.pack(side=BOTTOM, fill=X)
-
-        self.bind("<Return>", self.add_task)
-        self.colour_schemes = [{"bg":"lightgrey", "fg": "white"},{"bg":"grey","fg":"white"}]
-    def add_task(self, event=None):
-        task_text = self.task_create.get(1.0,TOP).strip()
-if __name__ == "__main__":
-    root = Root()
-    root.mainloop()
-"""
