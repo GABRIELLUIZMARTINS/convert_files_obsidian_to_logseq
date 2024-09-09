@@ -31,7 +31,7 @@ class obsidian_to_logseq:
     Args:
         obsidian_files (str): Path to obsidian files.
     """
-    def __init__(self,obsidian_files):
+    def __init__(self,obsidian_files = None):
         
         self.obsidian_files = obsidian_files
         conts = Constants()
@@ -93,21 +93,22 @@ class obsidian_to_logseq:
             else:
                 print(f"{item} it is not a file, igonoring")
                 
-
+    def set_path_obsidian_files(self,obsidian_files):
+        self.obsidian_files = obsidian_files
 
     # Rename files to logseq format
     def _rename(self,old_text):  
-
         # Case it is a file
         if not "![[" in old_text :
             return  old_text
+        # If don't have files to convert
+        self.flag_empty = False
     
         #Extract file name and extension
         file_name,extension = self._separete_file_name_extension(old_text)
         file_path =  self._find_file_path(file_name,extension)
 
         self._copy_files(file_path)
-                
         if(extension == "png" or extension == "jpg"):
             #file_folder = os.path.basename(file_path)
             new_text = f'![{file_name}](../assets/{file_name}.{extension}){{:height 500, :width 500}}'
@@ -123,18 +124,28 @@ class obsidian_to_logseq:
         return old_text
 
     # Convert obsidian 
-    def convert_files(self):
+    def convert_files(self,obsidian_files):
+        self.set_path_obsidian_files(obsidian_files)
+        self.flag_empty = True
+        # Finds the files .md
         for root, _, files in os.walk(self.obsidian_files):
             for file in files:
                 if file.endswith(".md"):
                     file_path = os.path.join(root, file)
+                    # Open files .md
                     with open(file_path, 'r+', encoding='utf-8') as f:
                         lines = f.readlines()
                         f.seek(0)
                         for line in lines:
                             new_line = ""
+                            # Checks if have someone of extension from de config.json
                             for conts in self.CONTANTS:
                                 new_line = self._rename(line) if (conts in line) else new_line
-                            new_line = line if new_line == "" else new_line
+                            '''if new_line == "":
+                                new_line = line
+                            else:'''
+                            new_line = line if new_line == "" else new_line 
                             f.write(new_line)
                         f.truncate()
+        return self.flag_empty 
+
