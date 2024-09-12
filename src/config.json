@@ -3,6 +3,8 @@
         "png",
         "jpg",
         "pdf",
-        "mp4"
+        "mp4",
+        "avif",
+        "webp"
     ]
 }

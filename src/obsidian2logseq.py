@@ -45,10 +45,10 @@ class obsidian_to_logseq:
         text = text.split(end_cut)[0]
 
         #Extract file name
-        file_name = text.split(half)[0]
+        file_name = text.rsplit(half,1)[0]
 
         #Extract extension name
-        extension = text.split(half)[1]
+        extension = text.rsplit(half,1)[1]
         extension = extension.split(or_end_cut)[0] if or_end_cut in extension else extension
 
         return file_name,extension
@@ -107,13 +107,11 @@ class obsidian_to_logseq:
 
         self._copy_files(file_path)
         if(extension == "png" or extension == "jpg"):
-            #file_folder = os.path.basename(file_path)
             new_text = f'![{file_name}](../assets/{file_name}.{extension}){{:height 500, :width 500}}'
             print(f"New text: {new_text}")
             return new_text
         for ext in self.CONTANTS:
             if extension == ext:
-                #file_folder = os.path.basename(file_path)
                 file_path =  self._find_file_path(file_name,extension)
                 new_text = f'![{file_name}](../assets/{file_name}.{extension})'
                 print(f"New text: {new_text}")
