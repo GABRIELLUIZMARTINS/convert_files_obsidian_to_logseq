@@ -3,6 +3,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk  
+import sys
 
 from obsidian2logseq import *
 import os
@@ -17,6 +18,15 @@ class Window(Tk):
         self.created_window()
         self.add_bottuns_and_labels()
         self.add_and_configure_image()
+
+    def resource_path(self, relative_path):
+        """Gets the absolute path of the resource, works for both development and PyInstaller"""
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)
 
     def created_window(self):
         # Window configuration
@@ -95,12 +105,8 @@ class Window(Tk):
 
 
     def add_and_configure_image(self): 
-        uppath = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
-        root = uppath(__file__,2)
-        self.iconbitmap(os.path.join(root, 'assets/obs2log.ico'))
-
         # Set the image path using a relative path
-        image_path = os.path.join(os.path.dirname(__file__), '../assets/obs2log.png')
+        image_path = self.resource_path(os.path.join('assets', 'obs2log.png'))
 
         # Load the image with PIL, resize it and convert it to PhotoImage 
         original_image = Image.open(image_path)
